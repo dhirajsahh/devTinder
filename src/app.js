@@ -1,12 +1,39 @@
 const express = require("express");
 
 const app = express();
-app.get("/user", (req, res) => {
-  res.send({
-    fristName: "Dhiraj",
-    lastName: "Mahato",
-  });
-});
+// app.get(/us(er)+/, (req, res) => {
+//   res.send({
+//     fristName: "Dhiraj",
+//     lastName: "Mahato",
+//   });
+// });
+// app.get(/user/, (req, res) => {
+//   res.send({
+//     fristName: "Dhiraj",
+//     lastName: "Mahato",
+//   });
+// });
+// app.get("/us*er", (req, res) => {
+//   res.send({
+//     fristName: "Dhiraj",
+//     lastName: "Mahato",
+//   });
+// });
+// app.get("/user",(req,res)=>{
+//     res.send("Hello user")
+//     console.log(req.query);
+    
+// })
+app.get("/user",(req,res)=>{
+    res.send("Hello user")
+   
+    
+})
+app.get("/user/:userId",(req,res)=>{
+    res.send("Hello user")
+    console.log(req.params);
+    
+})
 app.post("/user", (req, res) => {
   res.send("User created successfully");
 });
