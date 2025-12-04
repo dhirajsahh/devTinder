@@ -63,7 +63,7 @@ app.patch("/updateUser", async (req, res) => {
 
     res.send("User updated successfully");
   } catch (err) {
-    console.log(err.message);
+    console.log("error while updating", err.message);
     res.send(err.message);
   }
 });
