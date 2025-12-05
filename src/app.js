@@ -5,7 +5,6 @@ const User = require("./models/user");
 const { userAuth } = require("./middlewares/admin_auth");
 const bcrypt = require("bcryptjs");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
 const app = express();
 const Port = 3000;
 app.use(express.json());
@@ -73,13 +72,11 @@ app.post("/login", async (req, res) => {
     if (!user) {
       throw new Error("Invalid credentials");
     }
-    const isValid = await bcrypt.compare(password, user.password);
+    const isValid = await user.validatePassword(password);
     if (!isValid) {
       throw new Error("Invalid credentials");
     }
-    const token = jwt.sign({ id: user._id }, "MYDEVTINDERAPP", {
-      expiresIn: "1d",
-    });
+    const token = await user.getJWT();
 
     res.cookie("token", token);
     res.send("User login successfully");
