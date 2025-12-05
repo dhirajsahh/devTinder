@@ -17,9 +17,16 @@ app.post("/signup", async (req, res) => {
 });
 app.patch("/update", async (req, res) => {
   const userId = req.body.userId;
-  console.log(userId);
+  const data = req.body;
 
   try {
+    const allowedUpdates = ["userId", "photoUrl", "skills", "age", "gender"];
+    const isAllowed = Object.keys(data).every((key) =>
+      allowedUpdates.includes(key)
+    );
+    if (!isAllowed) {
+      throw new Error("Updates not allowed");
+    }
     const user = await User.findByIdAndUpdate(userId, req.body, {
       returnDocument: "after",
       runValidators: true,
