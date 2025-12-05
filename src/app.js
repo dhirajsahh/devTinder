@@ -4,6 +4,35 @@ const User = require("./models/user");
 const app = express();
 const Port = 3000;
 app.use(express.json());
+
+app.post("/signup", async (req, res) => {
+  try {
+    const user = new User(req.body);
+    await user.save();
+    res.send("User added successfully");
+  } catch (err) {
+    res.status(400).send("ERROR :" + err.message);
+    console.log(err);
+  }
+});
+app.patch("/update", async (req, res) => {
+  const userId = req.body.userId;
+  console.log(userId);
+
+  try {
+    const user = await User.findByIdAndUpdate(userId, req.body, {
+      returnDocument: "after",
+      runValidators: true,
+    });
+    console.log(user);
+
+    res.send("User updated successfully");
+  } catch (err) {
+    res.status(400).send("ERROR :" + err.message);
+    console.log(err);
+  }
+});
+/*
 app.post("/signup", async (req, res) => {
   const userDetails = req.body;
   try {
@@ -91,6 +120,7 @@ app.delete("/delete", async (req, res) => {
     res.send(err.message);
   }
 });
+*/
 connectDB()
   .then(() => {
     console.log("Database connected successfully");
