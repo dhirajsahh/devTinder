@@ -1,12 +1,24 @@
 const express = require("express");
 const connectDB = require("./config/database");
+const { validateSignUpData } = require("./utilis/validator");
 const User = require("./models/user");
+const bcrypt = require("bcryptjs");
 const app = express();
 const Port = 3000;
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
   const data = req.body;
+  const {
+    firstName,
+    lastName,
+    email,
+    password,
+    photoUrl,
+    skills,
+    age,
+    gender,
+  } = req.body;
   try {
     const allowedFields = [
       "firstName",
@@ -24,9 +36,46 @@ app.post("/signup", async (req, res) => {
     if (!isAllowed) {
       throw new Error("Unwanted fileds not allowed");
     }
-    const user = new User(req.body);
+    //validate data
+    validateSignUpData(req);
+    //encrypt password
+    const hashPassword = await bcrypt.hash(password, 10);
+    console.log(hashPassword);
+
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password: hashPassword,
+      photoUrl,
+      skills,
+      age,
+      gender,
+    });
     await user.save();
     res.send("User added successfully");
+  } catch (err) {
+    res.status(400).send("ERROR :" + err.message);
+    console.log(err);
+  }
+});
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    if (!email || !password) {
+      throw new Error("All field is mandatory");
+    }
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new Error("Invalid credentials");
+    }
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      throw new Error("Invalid credentials");
+    }
+    res.send("User login successfully");
   } catch (err) {
     res.status(400).send("ERROR :" + err.message);
     console.log(err);
