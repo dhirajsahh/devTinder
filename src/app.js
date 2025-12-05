@@ -3,10 +3,12 @@ const connectDB = require("./config/database");
 const { validateSignUpData } = require("./utilis/validator");
 const User = require("./models/user");
 const bcrypt = require("bcryptjs");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 const app = express();
 const Port = 3000;
 app.use(express.json());
-
+app.use(cookieParser());
 app.post("/signup", async (req, res) => {
   const data = req.body;
   const {
@@ -40,7 +42,6 @@ app.post("/signup", async (req, res) => {
     validateSignUpData(req);
     //encrypt password
     const hashPassword = await bcrypt.hash(password, 10);
-    console.log(hashPassword);
 
     const user = new User({
       firstName,
@@ -75,7 +76,24 @@ app.post("/login", async (req, res) => {
     if (!isValid) {
       throw new Error("Invalid credentials");
     }
+    const token = jwt.sign({ id: user._id }, "MYDEVTINDERAPP");
+
+    res.cookie("token", token);
     res.send("User login successfully");
+  } catch (err) {
+    res.status(400).send("ERROR :" + err.message);
+    console.log(err);
+  }
+});
+app.get("/profile", async (req, res) => {
+  try {
+    // console.log("cookies", req.cookies);
+    const { token } = req.cookies;
+    const decodedMessage = jwt.verify(token, "MYDEVTINDERAPP");
+    const { id } = decodedMessage;
+    const user = await User.findById(id);
+
+    res.send("User Profile" + user);
   } catch (err) {
     res.status(400).send("ERROR :" + err.message);
     console.log(err);
