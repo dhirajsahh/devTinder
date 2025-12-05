@@ -2,6 +2,7 @@ const express = require("express");
 const connectDB = require("./config/database");
 const { validateSignUpData } = require("./utilis/validator");
 const User = require("./models/user");
+const { userAuth } = require("./middlewares/admin_auth");
 const bcrypt = require("bcryptjs");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
@@ -76,7 +77,9 @@ app.post("/login", async (req, res) => {
     if (!isValid) {
       throw new Error("Invalid credentials");
     }
-    const token = jwt.sign({ id: user._id }, "MYDEVTINDERAPP");
+    const token = jwt.sign({ id: user._id }, "MYDEVTINDERAPP", {
+      expiresIn: "1d",
+    });
 
     res.cookie("token", token);
     res.send("User login successfully");
@@ -85,20 +88,26 @@ app.post("/login", async (req, res) => {
     console.log(err);
   }
 });
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    // console.log("cookies", req.cookies);
-    const { token } = req.cookies;
-    const decodedMessage = jwt.verify(token, "MYDEVTINDERAPP");
-    const { id } = decodedMessage;
-    const user = await User.findById(id);
-
-    res.send("User Profile" + user);
+    const user = req.user;
+    res.send(user);
   } catch (err) {
     res.status(400).send("ERROR :" + err.message);
     console.log(err);
   }
 });
+
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
+  const user = req.user;
+  try {
+    res.send(user.firstName + " is Sending connection");
+  } catch (err) {
+    res.status(400).send("ERROR :" + err.message);
+    console.log(err);
+  }
+});
+
 app.patch("/update", async (req, res) => {
   const userId = req.body.userId;
   const data = req.body;

@@ -1,20 +1,25 @@
-const isAuthneticated = (req, res, next) => {
-  const bodyToken = "XYZ";
-  const actualToken = "XYZ";
-  console.log("I am from admin middleware");
-
-  if (bodyToken != actualToken) {
-    res.status(401).send("You are not authorized");
-  } else next();
+const jwt = require("jsonwebtoken");
+const User = require("../models/user");
+const userAuth = async (req, res, next) => {
+  const { token } = req.cookies;
+  try {
+    if (!token) {
+      throw new Error("Token is not valid!!!!!!");
+    }
+    const decodedMessage = jwt.verify(token, "MYDEVTINDERAPP");
+    const { id } = decodedMessage;
+    if (!id) {
+      throw new Error("Invalid token");
+    }
+    const user = await User.findById(id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    req.user = user;
+    next();
+  } catch (err) {
+    res.status(400).send("ERROR:" + err.message);
+    console.log(err.message);
+  }
 };
-const isUserAuthneticated=(req,res,next)=>{
-    const bodyToken="ABC";
-    const actualToken="ABC";
-    if(bodyToken!=actualToken){
-         res.status(401).send("You are not authorized");
-    }
-    else {
-        next();
-    }
-}
-module.exports = { isAuthneticated,isUserAuthneticated };
+module.exports = { userAuth };
