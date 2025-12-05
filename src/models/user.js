@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const validator = require("validator");
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -17,11 +17,21 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("Invalid email");
+        }
+      },
     },
     password: {
       type: String,
       minLength: 4,
       maxLength: 50,
+      validate(value) {
+        if (!validator.isStrongPassword(value)) {
+          throw new Error("weak Password");
+        }
+      },
     },
     age: {
       type: Number,
@@ -39,6 +49,11 @@ const userSchema = new mongoose.Schema(
     },
     photoUrl: {
       type: String,
+      validate(value) {
+        if (!validator.isURL(value)) {
+          throw new Error("Invalid PhotoURL");
+        }
+      },
       default:
         "https://static.vecteezy.com/system/resources/previews/013/042/571/original/default-avatar-profile-icon-social-media-user-photo-in-flat-style-vector.jpg",
     },

@@ -6,7 +6,24 @@ const Port = 3000;
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
+  const data = req.body;
   try {
+    const allowedFields = [
+      "firstName",
+      "lastName",
+      "email",
+      "password",
+      "photoUrl",
+      "skills",
+      "age",
+      "gender",
+    ];
+    const isAllowed = Object.keys(data).every((key) =>
+      allowedFields.includes(key)
+    );
+    if (!isAllowed) {
+      throw new Error("Unwanted fileds not allowed");
+    }
     const user = new User(req.body);
     await user.save();
     res.send("User added successfully");
@@ -31,7 +48,6 @@ app.patch("/update", async (req, res) => {
       returnDocument: "after",
       runValidators: true,
     });
-    console.log(user);
 
     res.send("User updated successfully");
   } catch (err) {
